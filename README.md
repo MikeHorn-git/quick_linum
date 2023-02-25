@@ -1,7 +1,7 @@
 # basic_linum
 Basic linux enumeration script
 
-Usage : 
+Usage: 
 ./basic_linum.sh help | Print help message
 ./basic_linum.sh run  | Run the script
 Output informations save to enumeration and searchsploit directories.
