@@ -155,14 +155,15 @@ check_directories()
 helpfunc()
 {
        echo 'Basic linux enumeration script'
-       echo 'Usage : ./basic_linum.sh run'
-       echo 'Aim to be helpfull for PrivEsc'
+       echo 'Usage:' 
+       echo './basic_linum.sh help | Print help message'
+       echo './basic_linum.sh run  | Run the script'
        echo ' '
        echo "Output informations save to 'enumeration' directory"
        echo "Enumeration about : 'system, network, senvitive/credentials, binaries/process'"
        echo "Searchsploit about : 'kernel/sudo' privilege escalation"
        echo ' '
-       echo 'Documentation :'
+       echo 'Documentation:'
        echo 'https://book.hacktricks.xyz/linux-hardening/privilege-escalation'
        echo 'https://blog.g0tmi1k.com/2011/08/basic-linux-privilege-escalation/'
        echo 'https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Linux%20-%20Privilege%20Escalation.md'
