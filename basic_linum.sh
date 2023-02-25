@@ -8,7 +8,7 @@
 # https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Linux%20-%20Privilege%20Escalation.md
 
 
-# Found and export different os infos: environment/kernel/mount/cronjobs
+# Find and export different os infos: environment/kernel/mount/cronjobs
 
 # Check Package management installed 
 if [ -e $apt ]; then pm="apt"; fi
