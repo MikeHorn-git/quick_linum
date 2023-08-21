@@ -1,13 +1,17 @@
-# basic_linum
-Basic linux enumeration script
+# Quick_linum
 
-Usage: 
-./basic_linum.sh help | Print help message
-./basic_linum.sh run  | Run the script
-Output informations save to enumeration and searchsploit directories.
-Enumeration about : system, network, senvitive/credentials, binaries/process
-Searchsploit about : kernel/sudo privilege escalation
-Documentation:
--https://book.hacktricks.xyz/linux-hardening/privilege-escalation
--https://blog.g0tmi1k.com/2011/08/basic-linux-privilege-escalation/
--https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Linux%20-%20Privilege%20Escalation.md
+![penguin-159524_640](https://github.com/MikeHorn-git/quick_linum/assets/123373126/3c1e1bda-e0f3-4b20-883e-f84c86ad02ac)
+
+# Description
+Script that exfiltrate data silently in less than 30secs. Delete various logs after collecting data.
+
+# Installation
+```bash
+git clone https://github.com/MikeHorn-git/quick_linum.git
+chmod +x quick_linum
+./quick_linum
+```
+
+# Credits
+* [Hacktricks](https://book.hacktricks.xyz/linux-hardening/privilege-escalation)
+* [Linpeas](https://github.com/carlospolop/PEASS-ng/tree/master/linPEAS)
